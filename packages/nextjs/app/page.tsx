@@ -2,6 +2,7 @@ import { CounterDisplay } from "~~/components/CounterDisplay";
 import { CounterIncrement } from "~~/components/CounterIncrement";
 import { CounterDecrease } from "~~/components/CounterDecrease";
 import { CounterSet } from "~~/components/CounterSet";
+import { CounterReset } from "~~/components/CounterReset";
 
 const Home = () => {
   return (
@@ -20,6 +21,7 @@ const Home = () => {
             <CounterDecrease />
           </div>
           <CounterSet />
+          <CounterReset />
         </div>
       </div>
     </div>

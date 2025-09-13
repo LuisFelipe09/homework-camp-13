@@ -86,70 +86,31 @@ export const CounterReset = () => {
     const isLoading = isProcessing || status === "pending";
 
     if (!isConnected) {
-        return (
-            <div className="alert alert-warning">
-                <span>Connect your wallet to reset the counter</span>
-            </div>
-        );
+        return <span className="text-warning text-sm font-medium">Connect wallet to reset</span>;
     }
 
     if (!COUNTER_CONTRACT_ADDRESS) {
-        return (
-            <div className="alert alert-info">
-                <span>Loading counter contract information...</span>
-            </div>
-        );
+        return <span className="text-info text-sm font-medium">Loading contract...</span>;
     }
 
     if (!hasBalance) {
-        return (
-            <div className="alert alert-error">
-                <div className="flex flex-col">
-                    <span>Insufficient STRK balance</span>
-                    <div className="text-xs mt-1">
-                        Reset requires 1 STRK token. Balance: {balance?.toString() || "0"}
-                    </div>
-                </div>
-            </div>
-        );
+        return <span className="text-error text-sm font-medium">Need 1 STRK to reset</span>;
     }
 
     return (
-        <div className="card bg-base-100 shadow-xl">
-            <div className="card-body items-center text-center">
-                <h2 className="card-title text-warning">Reset Counter</h2>
-                <div className="text-sm text-base-content/70 mb-4">
-                    <div>Cost: 1 STRK token</div>
-                    <div>Balance: {balance?.toString() || "0"} STRK</div>
-                    {!hasAllowance && (
-                        <div className="text-info text-xs">
-                            Will approve + reset in one transaction
-                        </div>
-                    )}
-                </div>
-                <button
-                    className="btn btn-warning"
-                    onClick={handleReset}
-                    disabled={isLoading || !hasBalance || !COUNTER_CONTRACT_ADDRESS}
-                >
-                    {isLoading ? (
-                        <>
-                            <span className="loading loading-spinner loading-sm"></span>
-                            {!hasAllowance ? "Approving & Resetting..." : "Resetting..."}
-                        </>
-                    ) : (
-                        <>
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                            Reset to 0 (1 STRK)
-                        </>
-                    )}
-                </button>
-                {status === "success" && (
-                    <div className="badge badge-success">Counter reset successfully!</div>
-                )}
-            </div>
-        </div>
+        <button
+            className="btn btn-primary btn-sm"
+            onClick={handleReset}
+            disabled={isLoading || !hasBalance || !COUNTER_CONTRACT_ADDRESS}
+        >
+            {isLoading ? (
+                <>
+                    <span className="loading loading-spinner loading-xs"></span>
+                    Reset...
+                </>
+            ) : (
+                "Reset (1 STRK)"
+            )}
+        </button>
     );
 };

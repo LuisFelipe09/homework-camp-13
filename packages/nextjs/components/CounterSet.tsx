@@ -57,59 +57,41 @@ export const CounterSet = () => {
     const isLoading = status === "pending";
 
     if (!isConnected) {
-        return (
-            <div className="alert alert-warning">
-                <span>Connect your wallet to set the counter</span>
-            </div>
-        );
+        return <span className="text-warning text-sm font-medium">Connect wallet</span>;
     }
 
     if (isLoadingOwner) {
-        return (
-            <div className="card bg-base-100 shadow-xl">
-                <div className="card-body items-center text-center">
-                    <span className="loading loading-spinner loading-lg"></span>
-                    <span>Checking owner permissions...</span>
-                </div>
-            </div>
-        );
+        return <span className="text-info text-sm font-medium">Checking permissions...</span>;
+    }
+
+    if (!isOwner) {
+        return <span className="text-warning text-sm font-medium">Owner only</span>;
     }
 
     return (
-        <div className="card bg-base-100 shadow-xl">
-            <div className="card-body items-center text-center">
-                <h2 className="card-title">Set Counter</h2>
-                <div className="form-control w-full max-w-xs">
-                    <input
-                        type="number"
-                        placeholder="Enter new value"
-                        className="input input-bordered w-full"
-                        value={newValue}
-                        onChange={(e) => setNewValue(e.target.value)}
-                        min="0"
-                    />
-                </div>
-                <button
-                    className="btn btn-accent"
-                    onClick={handleSet}
-                    disabled={isLoading || !newValue || !isOwner}
-                    title={!isOwner ? "Only contract owner can set counter" : ""}
-                >
-                    {isLoading ? (
-                        <>
-                            <span className="loading loading-spinner loading-sm"></span>
-                            Processing...
-                        </>
-                    ) : (
-                        "Set Value"
-                    )}
-                </button>
-                {!isOwner && (
-                    <div className="text-xs text-warning mt-2">
-                        Only owner can use this function
-                    </div>
+        <div className="flex gap-2 items-center">
+            <input
+                type="number"
+                placeholder="New value"
+                className="input input-bordered input-sm w-20 bg-base-200 text-base-content"
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                min="0"
+            />
+            <button
+                className="btn btn-primary btn-sm"
+                onClick={handleSet}
+                disabled={isLoading || !newValue}
+            >
+                {isLoading ? (
+                    <>
+                        <span className="loading loading-spinner loading-xs"></span>
+                        Set...
+                    </>
+                ) : (
+                    "Set"
                 )}
-            </div>
+            </button>
         </div>
     );
 };

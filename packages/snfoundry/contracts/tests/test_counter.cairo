@@ -1,12 +1,11 @@
-use snforge_std::EventSpyAssertionsTrait;
-use starknet::ContractAddress;
-use snforge_std::DeclareResultTrait;
-use snforge_std::{declare, ContractClassTrait, spy_events, start_cheat_caller_address,
-    stop_cheat_caller_address, set_balance, Token};
-use contracts::CounterContract::ICounterDispatcherTrait;
-use contracts::CounterContract::ICounterDispatcher;
-use contracts::CounterContract::CounterContract::{CounterChange, ChangeReason, Event};
+use contracts::counter::CounterContract::{ChangeReason, CounterChanged, Event};
+use contracts::counter::{ICounterDispatcher, ICounterDispatcherTrait};
 use openzeppelin_token::erc20::interface::{IERC20Dispatcher, IERC20DispatcherTrait};
+use snforge_std::{
+    ContractClassTrait, DeclareResultTrait, EventSpyAssertionsTrait, Token, declare, set_balance,
+    spy_events, start_cheat_caller_address, stop_cheat_caller_address,
+};
+use starknet::ContractAddress;
 
 fn owner() -> ContractAddress {
     0x1234.try_into().unwrap()
@@ -53,17 +52,13 @@ fn test_increase_counter() {
     let expected_counter: u32 = 1;
     assert!(current_counter == expected_counter, "Counter should be increased by 1");
 
-    let expected_event = CounterChange {
-        caller: user(),
-        old_value: 0,
-        new_value: 1,
-        reason: ChangeReason::Increase,
+    let expected_event = CounterChanged {
+        caller: user(), old_value: 0, new_value: 1, reason: ChangeReason::Increase,
     };
-    spy.assert_emitted(@array![(
-        dispatcher.contract_address,
-        Event::CounterChanged(expected_event)
-    )]);
-
+    spy
+        .assert_emitted(
+            @array![(dispatcher.contract_address, Event::CounterChanged(expected_event))],
+        );
 }
 
 #[test]
@@ -79,16 +74,13 @@ fn test_decrease_counter() {
     let expected_counter: u32 = 4;
     assert!(current_counter == expected_counter, "Counter should be decreased by 1");
 
-    let expected_event = CounterChange {
-        caller: user(),
-        old_value: 5,
-        new_value: 4,
-        reason: ChangeReason::Decrease,
+    let expected_event = CounterChanged {
+        caller: user(), old_value: 5, new_value: 4, reason: ChangeReason::Decrease,
     };
-    spy.assert_emitted(@array![(
-        dispatcher.contract_address,
-        Event::CounterChanged(expected_event)
-    )]);
+    spy
+        .assert_emitted(
+            @array![(dispatcher.contract_address, Event::CounterChanged(expected_event))],
+        );
 }
 
 #[test]
@@ -114,16 +106,13 @@ fn test_set_counter_by_owner() {
     let expected_counter: u32 = 5;
     assert!(current_counter == expected_counter, "Counter should be set to 5");
 
-    let expected_event = CounterChange {
-        caller: owner(),
-        old_value: 3,
-        new_value: 5,
-        reason: ChangeReason::Set,
+    let expected_event = CounterChanged {
+        caller: owner(), old_value: 3, new_value: 5, reason: ChangeReason::Set,
     };
-    spy.assert_emitted(@array![(
-        dispatcher.contract_address,
-        Event::CounterChanged(expected_event)
-    )]);
+    spy
+        .assert_emitted(
+            @array![(dispatcher.contract_address, Event::CounterChanged(expected_event))],
+        );
 }
 
 #[test]
@@ -158,7 +147,7 @@ fn test_reset_counter_insufficient_balance_owner() {
 }
 
 #[test]
-fn test_reset_counter_success() {   
+fn test_reset_counter_success() {
     let init_value: u32 = 10;
     let mut spy = spy_events();
 
@@ -167,13 +156,15 @@ fn test_reset_counter_success() {
     set_balance(user, 50000000000000000000, Token::STRK); // 50 token with 18 decimals
 
     // Approve the contract to spend 1 STRK on behalf of the user
-    let starknet_token_address: ContractAddress = 0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d.try_into().unwrap();
-    let token_dispatcher = IERC20Dispatcher {
-        contract_address: starknet_token_address,
-    };
+    let starknet_token_address: ContractAddress =
+        0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d
+        .try_into()
+        .unwrap();
+    let token_dispatcher = IERC20Dispatcher { contract_address: starknet_token_address };
 
     start_cheat_caller_address(token_dispatcher.contract_address, user);
-    let approve_success = token_dispatcher.approve(dispatcher_counter.contract_address, 1000000000000000000); // Approve 1 STRK
+    let approve_success = token_dispatcher
+        .approve(dispatcher_counter.contract_address, 1000000000000000000); // Approve 1 STRK
     stop_cheat_caller_address(token_dispatcher.contract_address);
     assert!(approve_success, "Approval failed");
 
@@ -185,17 +176,20 @@ fn test_reset_counter_success() {
     let expected_counter: u32 = 0;
     assert!(current_counter == expected_counter, "Counter should be reset to 0");
 
-    let expected_event = CounterChange {
-        caller: user,
-        old_value: 10,
-        new_value: 0,
-        reason: ChangeReason::Reset,
+    let expected_event = CounterChanged {
+        caller: user, old_value: 10, new_value: 0, reason: ChangeReason::Reset,
     };
-    spy.assert_emitted(@array![(
-        dispatcher_counter.contract_address,
-        Event::CounterChanged(expected_event)
-    )]);
+    spy
+        .assert_emitted(
+            @array![(dispatcher_counter.contract_address, Event::CounterChanged(expected_event))],
+        );
 
-    assert!(token_dispatcher.balance_of(user) == 49000000000000000000, "Token balance should match the STRK balance");
-    assert!(token_dispatcher.balance_of(owner()) == 1000000000000000000, "Owner should receive the STRK payment");
+    assert!(
+        token_dispatcher.balance_of(user) == 49000000000000000000,
+        "Token balance should match the STRK balance",
+    );
+    assert!(
+        token_dispatcher.balance_of(owner()) == 1000000000000000000,
+        "Owner should receive the STRK payment",
+    );
 }
